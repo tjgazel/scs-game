@@ -2,21 +2,51 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ManufacturerInactivePlayer;
 use App\Events\ManufacturerWeekEvent;
 use App\Models\Manufacturer;
-use App\Models\ManufacturerWeek;
 use App\Models\ManufacturerYourOrder;
+use App\Models\SessionDB;
+use App\Services\ManufacturerService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ManufacturerController extends Controller
 {
+	/**
+	 * @var ManufacturerService
+	 */
+	private $service;
+
+	public function __construct(ManufacturerService $service)
+	{
+		$this->service = $service;
+	}
+
 	public function index($gameId)
 	{
 		$model = Manufacturer::where('game_id', $gameId)->first();
-		$model->user_id = auth()->user()->id;
-		$model->autoplayer = false;
-		$model->save();
 		$manufacturer = $model;
+
+		if ($model->autoplayer) {
+			$model->user_id = auth()->user()->id;
+			$model->autoplayer = false;
+			$model->save();
+
+		} elseif ($model->user_id != auth()->user()->id) {
+			$last_activity = SessionDB::where('id', $model->user->session_id)->first()->last_activity;
+			$now = Carbon::now();
+
+			if ($now->diffInMinutes(Carbon::createFromTimestamp($last_activity)) > 1) {
+				$model->user_id = auth()->user()->id;
+				$model->autoplayer = false;
+				$model->save();
+				broadcast(new ManufacturerInactivePlayer($gameId));
+			}else{
+				toastr()->error('Já existe um usuário jogando como Fabricante!');
+				return redirect()->back();
+			}
+		}
 
 		return view('manufacturer', compact('manufacturer'));
 	}
@@ -59,34 +89,8 @@ class ManufacturerController extends Controller
 
 	public function nextWeek($gameId)
 	{
-		$model = Manufacturer::where('game_id', $gameId)->first();
-		$modelWeekCount = $model->manufacturerWeeks()->count();
-
-		$incoming = isset($model->yourOrders[$modelWeekCount - 3]->your_order) ?
-			$model->yourOrders[$modelWeekCount - 3]->your_order : 0;
-		$available = $model->manufacturerWeeks->last()->inventory + $incoming;
-		$toShip = $model->manufacturerWeeks->last()->back_order + $model->distributor->yourOrders->last()->your_order;
-		$delivery = ($available - $toShip >= 0) ? $toShip : $available;
-		$backOrder = ($available - $toShip < 0) ? (($available - $toShip) + (-2 * ($available - $toShip))) : 0;
-		$inventory = ($available - $delivery >= 0) ? ($available - $delivery) : 0;
-		$costStock = $model->game->cost_stock * $inventory;
-		$costDelay = $model->game->cost_delay * $backOrder;
-		$cost = $costStock + $costDelay;
-
-		$manufacturerWeek = ManufacturerWeek::create([
-			'manufacturer_id' => $model->id,
-			'incoming' => $incoming,
-			'available' => $available,
-			'new_order' => $model->distributor->yourOrders->last()->your_order,
-			'to_ship' => $toShip,
-			'delivery' => $delivery,
-			'back_order' => $backOrder,
-			'inventory' => $inventory,
-			'your_order' => $model->yourOrders->last()->your_order,
-			'cost' => $cost
-		]);
-
-		broadcast(new ManufacturerWeekEvent($model->game->id));
+		$manufacturerWeek = $this->service->nextWeek($gameId);
+		broadcast(new ManufacturerWeekEvent($gameId));
 
 		return $manufacturerWeek;
 	}

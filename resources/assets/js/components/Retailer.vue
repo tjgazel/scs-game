@@ -95,7 +95,7 @@
                 <div class="input-group-append">
                   <button @click="onSubmit" class="btn btn-dark btn-sm" type="button"
                           :disabled="loading">
-                    <i class="fa fa-angle-double-right"></i>
+                    <i class="fa fa-angle-double-right"></i> Próxima Semana
                   </button>
                 </div>
               </div>
@@ -140,6 +140,8 @@
           this.incoming = true;
           if (this.yourOrder) {
             this.nextWeek();
+          } else {
+            toastr.warning('Seus parceiros de jogo estão esperando! Faça seu pedido!');
           }
         });
       Echo.channel(`RetailerWeekEvent.${this.gameId}`)
@@ -147,10 +149,14 @@
           if (e.gameOff) {
             window.location = this.gameOffUrl;
           }
-          this.loadData();
           this.loading = false;
           this.yourOrder = false;
           this.incoming = false;
+          window.location.reload();
+        });
+      Echo.channel(`RetailerInactivePlayer.${this.gameId}`)
+        .listen('RetailerInactivePlayer', (e) => {
+          window.location = `${window.appUrl}/games/${this.gameId}`;
         });
     },
     data() {
@@ -202,10 +208,7 @@
           this.inputError = false;
           this.inputYourOrder = 0;
         }
-      }, 500),
-      graphic() {
-        console.log('Gráfico');
-      }
+      }, 500)
     }
   };
 </script>

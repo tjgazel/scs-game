@@ -19,18 +19,18 @@ class WholesalerObserver
 	 */
 	public function created(Wholesaler $wholesaler)
 	{
-		$initialInventory = random_int(50, 75);
-		$costStock = $initialInventory * $wholesaler->game->cost_stock;
+		$startInventory = startInventory();
+		$costStock = $startInventory * $wholesaler->game->cost_stock;
 
 		$data = [
 			'wholesaler_id' => $wholesaler->id,
 			'incoming' => 0,
-			'available' => $initialInventory,
+			'available' => $startInventory,
 			'new_order' => 0,
 			'to_ship' => 0,
 			'delivery' => 0,
 			'back_order' => 0,
-			'inventory' => $initialInventory,
+			'inventory' => $startInventory,
 			'your_order' => 0,
 			'cost' => $costStock
 		];

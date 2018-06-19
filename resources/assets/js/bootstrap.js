@@ -27,10 +27,10 @@ window.axios = require('axios');
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-window.appUrl = document.head.querySelector('meta[name="app-url"]');
+window.appUrl = document.head.querySelector('meta[name="app-url"]').content;
 
 /*if (window.appUrl) {
-  window.axios.defaults.baseURL = window.appUrl.content;
+  window.axios.defaults.baseURL = window.appUrl;
 }*/
 
 /**

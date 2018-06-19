@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Game extends Model
 {
-	protected $fillable = ['name', 'week', 'max_weeks', 'weeks_delivery', 'cost_stock', 'cost_delay', 'status'];
+	protected $fillable = ['name', 'max_weeks', 'max_wait', 'cost_stock', 'cost_delay', 'status'];
 
 	public function getCreatedAtAttribute($value)
 	{

@@ -44,7 +44,6 @@
     props: ['data'],
     data() {
       return {
-        appUrl: window.appUrl ? window.appUrl.content : '',
         filter: ''
       }
     },
@@ -57,7 +56,7 @@
     },
     methods: {
       link(gameId) {
-        return `${this.appUrl}/games/${gameId}`;
+        return `${window.appUrl}/games/${gameId}`;
       },
       date(dt) {
         return window.moment(new Date(dt)).format('DD/MM/YY HH:mm');

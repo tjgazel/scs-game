@@ -93,9 +93,9 @@
                 <input type="text" class="form-control" v-model="inputYourOrder" @keyup="inputChange($event)"
                        :disabled="loading">
                 <div class="input-group-append">
-                  <button @click="onSubmit" class="btn btn-outline-success btn-sm" type="button"
+                  <button @click="onSubmit" class="btn btn-dark btn-sm" type="button"
                           :disabled="loading">
-                    <i class="fas fa-check"></i>
+                    <i class="fa fa-angle-double-right"></i> Próxima Semana
                   </button>
                 </div>
               </div>
@@ -107,11 +107,13 @@
               </small>
             </li>
             <li class="list-group-item">
-              <i class="fas fa-truck-moving"></i> Em transito <small>(1ª semana)</small>
+              <i class="fas fa-truck-moving"></i> Em transito
+              <small>(1ª semana)</small>
               <span class="badge badge-info badge-size float-right">{{data.incomingWeekOne}}</span> <br>
             </li>
             <li class="list-group-item">
-              <i class="fas fa-truck-moving"></i> Em transito <small>(2ª semana)</small>
+              <i class="fas fa-truck-moving"></i> Em transito
+              <small>(2ª semana)</small>
               <span class="badge badge-warning text-white badge-size float-right">{{data.incomingWeekTwo}}</span> <br>
             </li>
             <li class="list-group-item">
@@ -139,6 +141,8 @@
           this.newOrder = true;
           if (this.yourOrder && this.incoming) {
             this.nextWeek();
+          } else if (!this.yourOrder) {
+            toastr.warning('Seus parceiros de jogo estão esperando! Faça seu pedido!');
           }
         });
       Echo.channel(`DistributorWeekEvent.${this.gameId}`)
@@ -146,6 +150,8 @@
           this.incoming = true;
           if (this.yourOrder && this.newOrder) {
             this.nextWeek();
+          } else if (!this.yourOrder) {
+            toastr.warning('Seus parceiros de jogo estão esperando! Faça seu pedido!');
           }
         });
       Echo.channel(`RetailerWeekEvent.${this.gameId}`)
@@ -153,11 +159,15 @@
           if (e.gameOff) {
             window.location = this.gameOffUrl;
           }
-          this.loadData();
           this.loading = false;
           this.yourOrder = false;
           this.newOrder = false;
           this.incoming = false;
+          window.location.reload();
+        });
+      Echo.channel(`WholesalerInactivePlayer.${this.gameId}`)
+        .listen('WholesalerInactivePlayer', (e) => {
+          window.location = `${window.appUrl}/games/${this.gameId}`;
         });
     },
     data() {
@@ -210,10 +220,7 @@
           this.inputError = false;
           this.inputYourOrder = 0;
         }
-      }, 500),
-      graphic() {
-        console.log('Gráfico');
-      }
+      }, 500)
     }
   };
 </script>

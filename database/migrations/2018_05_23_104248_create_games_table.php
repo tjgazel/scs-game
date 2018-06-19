@@ -17,6 +17,7 @@ class CreateGamesTable extends Migration
             $table->increments('id');
             $table->string('name', 30);
             $table->unsignedTinyInteger('max_weeks')->default(52);
+            $table->unsignedTinyInteger('max_wait')->default(5);
             $table->decimal('cost_stock')->default('15.00');
             $table->decimal('cost_delay')->default('40.00');
             $table->boolean('status')->default(true);

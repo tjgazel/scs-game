@@ -19,18 +19,18 @@ class RetailerObserver
 	 */
 	public function created(Retailer $retailer)
 	{
-		$initialInventory = random_int(50, 75);
-		$costStock = $initialInventory * $retailer->game->cost_stock;
+		$startInventory = startInventory();
+		$costStock = $startInventory * $retailer->game->cost_stock;
 
 		$data = [
 			'retailer_id' => $retailer->id,
 			'incoming' => 0,
-			'available' => $initialInventory,
+			'available' => $startInventory,
 			'new_order' => 0,
 			'to_ship' => 0,
 			'delivery' => 0,
 			'back_order' => 0,
-			'inventory' => $initialInventory,
+			'inventory' => $startInventory,
 			'your_order' => 0,
 			'cost' => $costStock
 		];

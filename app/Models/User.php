@@ -27,6 +27,11 @@ class User extends Authenticatable
         'password', 'session_id', 'remember_token',
     ];
 
+    public function sessionDB()
+	{
+		return $this->hasOne(SessionDB::class);
+	}
+
     public function retailer()
 	{
 		return $this->hasOne(Retailer::class);

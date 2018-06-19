@@ -2,22 +2,55 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DistributorInactivePlayer;
 use App\Events\DistributorWeekEvent;
-use App\Events\ManufacturerNewOrderEvent;
 use App\Models\Distributor;
-use App\Models\DistributorWeek;
 use App\Models\DistributorYourOrder;
+use App\Models\SessionDB;
+use App\Services\DistributorService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DistributorController extends Controller
 {
+	/**
+	 * @var DistributorService
+	 */
+	private $service;
+
+	/**
+	 * DistributorController constructor.
+	 * @param DistributorService $service
+	 */
+	public function __construct(DistributorService $service)
+	{
+		$this->service = $service;
+	}
+
 	public function index($gameId)
 	{
 		$model = Distributor::where('game_id', $gameId)->first();
-		$model->user_id = auth()->user()->id;
-		$model->autoplayer = false;
-		$model->save();
 		$distributor = $model;
+
+		if ($model->autoplayer) {
+			$model->user_id = auth()->user()->id;
+			$model->autoplayer = false;
+			$model->save();
+
+		} elseif ($model->user_id != auth()->user()->id) {
+			$last_activity = SessionDB::where('id', $model->user->session_id)->first()->last_activity;
+			$now = Carbon::now();
+
+			if ($now->diffInMinutes(Carbon::createFromTimestamp($last_activity)) > 1) {
+				$model->user_id = auth()->user()->id;
+				$model->autoplayer = false;
+				$model->save();
+				broadcast(new DistributorInactivePlayer($gameId));
+			}else{
+				toastr()->error('Já existe um usuário jogando como Distribuidor!');
+				return redirect()->back();
+			}
+		}
 
 		return view('distributor', compact('distributor'));
 	}
@@ -57,41 +90,13 @@ class DistributorController extends Controller
 			'your_order' => $request->get('your_order')
 		]);
 
-		broadcast(new ManufacturerNewOrderEvent($model->game->id));
-
 		return ['message' => 'Ok'];
 	}
 
 	public function nextWeek($gameId)
 	{
-		$model = Distributor::where('game_id', $gameId)->first();
-		$manufacturerWeekCount = $model->manufacturer->manufacturerWeeks()->count();
-
-		$incoming = isset($model->manufacturer->manufacturerWeeks[$manufacturerWeekCount - 3]->delivery) ?
-			$model->manufacturer->manufacturerWeeks[$manufacturerWeekCount - 3]->delivery : 0;
-		$available = $model->distributorWeeks->last()->inventory + $incoming;
-		$toShip = $model->distributorWeeks->last()->back_order + $model->wholesaler->yourOrders->last()->your_order;
-		$delivery = ($available - $toShip >= 0) ? $toShip : $available;
-		$backOrder = ($available - $toShip < 0) ? (($available - $toShip) + (-2 * ($available - $toShip))) : 0;
-		$inventory = ($available - $delivery >= 0) ? ($available - $delivery) : 0;
-		$costStock = $model->game->cost_stock * $inventory;
-		$costDelay = $model->game->cost_delay * $backOrder;
-		$cost = $costStock + $costDelay;
-
-		$distributorWeek = DistributorWeek::create([
-			'distributor_id' => $model->id,
-			'incoming' => $incoming,
-			'available' => $available,
-			'new_order' => $model->wholesaler->yourOrders->last()->your_order,
-			'to_ship' => $toShip,
-			'delivery' => $delivery,
-			'back_order' => $backOrder,
-			'inventory' => $inventory,
-			'your_order' => $model->yourOrders->last()->your_order,
-			'cost' => $cost
-		]);
-
-		broadcast(new DistributorWeekEvent($model->game->id));
+		$distributorWeek = $this->service->nextWeek($gameId);
+		broadcast(new DistributorWeekEvent($gameId));
 
 		return $distributorWeek;
 	}

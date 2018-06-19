@@ -1,38 +1,21 @@
 <?php
 
-if (!function_exists('removeAllGameSessions')) {
-	function removeAllGameSessions($userId)
-	{
-		if ($retailers = \App\Models\Retailer::where('user_id', $userId)->get()) {
-			foreach ($retailers as $retailer) {
-				$retailer->user_id = null;
-				$retailer->autoplayer = true;
-				$retailer->save();
-			}
+if (!function_exists('startInventory')){
+	function startInventory(){
+		return random_int(50, 75);
+	}
+}
+
+if (!function_exists('orderCalculate')){
+	function orderCalculate($maxWeeks, $weekCount){
+		if ($maxWeeks == 52 && ($weekCount <= ($maxWeeks / 2) || $weekCount > (($maxWeeks / 2) + 10))) {
+			return random_int(5, 40);
 		}
 
-		if ($wholesalers = \App\Models\Wholesaler::where('user_id', $userId)->get()) {
-			foreach ($wholesalers as $wholesaler) {
-				$wholesaler->user_id = null;
-				$wholesaler->autoplayer = true;
-				$wholesaler->save();
-			}
+		if ($maxWeeks == 26 && ($weekCount <= ($maxWeeks / 2) || $weekCount > (($maxWeeks / 2) + 6))) {
+			return random_int(5, 40);
 		}
 
-		if ($distributors = \App\Models\Distributor::where('user_id', $userId)->get()) {
-			foreach ($distributors as $distributor) {
-				$distributor->user_id = null;
-				$distributor->autoplayer = true;
-				$distributor->save();
-			}
-		}
-
-		if ($manufacturers = \App\Models\Manufacturer::where('user_id', $userId)->get()) {
-			foreach ($manufacturers as $manufacturer) {
-				$manufacturer->user_id = null;
-				$manufacturer->autoplayer = true;
-				$manufacturer->save();
-			}
-		}
+		return random_int(40, 75);
 	}
 }

@@ -2,23 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\RetailerWeekEvent;
-use App\Events\WholesalerNewOrderEvent;
+use App\Events\RetailerInactivePlayer;
 use App\Models\Retailer;
-use App\Models\RetailerWeek;
 use App\Models\RetailerYourOrder;
+use App\Models\SessionDB;
+use App\Services\RetailerService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class RetailerController extends Controller
 {
+	/**
+	 * @var RetailerService
+	 */
+	private $service;
+
+	/**
+	 * RetailerController constructor.
+	 * @param RetailerService $service
+	 */
+	public function __construct(RetailerService $service)
+	{
+		$this->service = $service;
+	}
 
 	public function index($gameId)
 	{
 		$model = Retailer::where('game_id', $gameId)->first();
-		$model->user_id = auth()->user()->id;
-		$model->autoplayer = false;
-		$model->save();
 		$retailer = $model;
+
+		if ($model->autoplayer) {
+			$model->user_id = auth()->user()->id;
+			$model->autoplayer = false;
+			$model->save();
+
+		} elseif ($model->user_id != auth()->user()->id) {
+			$last_activity = SessionDB::where('id', $model->user->session_id)->first()->last_activity;
+			$now = Carbon::now();
+
+			if ($now->diffInMinutes(Carbon::createFromTimestamp($last_activity)) > $model->game->max_wait) {
+				$model->user_id = auth()->user()->id;
+				$model->autoplayer = false;
+				$model->save();
+				broadcast(new RetailerInactivePlayer($gameId));
+			}else{
+				toastr()->error('Já existe um usuário jogando como Varejista!');
+				return redirect()->back();
+			}
+		}
 
 		return view('retailer', compact('retailer'));
 	}
@@ -50,42 +81,12 @@ class RetailerController extends Controller
 			'your_order' => $request->get('your_order')
 		]);
 
-		broadcast(new WholesalerNewOrderEvent($model->game->id));
-
 		return ['message' => 'Ok'];
 	}
 
 	public function nextWeek($gameId)
 	{
-		$model = Retailer::where('game_id', $gameId)->first();
-		$wholesalerWeekCount = $model->wholesaler->wholesalerWeeks()->count();
-		$newOrder = $this->newOrderCalculate($model->game->max_weeks, $wholesalerWeekCount);
-
-		$incoming = isset($model->wholesaler->wholesalerWeeks[$wholesalerWeekCount - 3]->delivery) ?
-			$model->wholesaler->wholesalerWeeks[$wholesalerWeekCount - 3]->delivery : 0;
-		$available = $model->retailerWeeks->last()->inventory + $incoming;
-		$toShip = $model->retailerWeeks->last()->back_order + $newOrder;
-		$delivery = ($available - $toShip >= 0) ? $toShip : $available;
-		$backOrder = ($available - $toShip < 0) ? (($available - $toShip) + (-2 * ($available - $toShip))) : 0;
-		$inventory = ($available - $delivery >= 0) ? ($available - $delivery) : 0;
-		$costStock = $model->game->cost_stock * $inventory;
-		$costDelay = $model->game->cost_delay * $backOrder;
-		$cost = $costStock + $costDelay;
-
-		$retailerWeek = RetailerWeek::create([
-			'retailer_id' => $model->id,
-			'incoming' => $incoming,
-			'available' => $available,
-			'new_order' => $newOrder,
-			'to_ship' => $toShip,
-			'delivery' => $delivery,
-			'back_order' => $backOrder,
-			'inventory' => $inventory,
-			'your_order' => $model->yourOrders->last()->your_order,
-			'cost' => $cost
-		]);
-
-		broadcast(new RetailerWeekEvent($model->game->id));
+		$retailerWeek = $this->service->nextWeek($gameId);
 
 		return $retailerWeek;
 	}
@@ -108,23 +109,4 @@ class RetailerController extends Controller
 
 		return redirect()->route('games.index');
 	}
-
-	/**
-	 * @param $maxWeeks
-	 * @param $weekCount
-	 * @return int
-	 */
-	private function newOrderCalculate($maxWeeks, $weekCount)
-	{
-		if ($maxWeeks == 52 && ($weekCount <= ($maxWeeks / 2) || $weekCount > (($maxWeeks / 2) + 10))) {
-			return random_int(5, 40);
-		}
-
-		if ($maxWeeks == 26 && ($weekCount <= ($maxWeeks / 2) || $weekCount > (($maxWeeks / 2) + 6))) {
-			return random_int(5, 40);
-		}
-
-		return random_int(40, 75);
-	}
-
 }
