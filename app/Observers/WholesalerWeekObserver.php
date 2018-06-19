@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Events\WholesalerWeekEvent;
 use App\Models\WholesalerWeek;
 use App\Models\SessionDB;
 use App\Services\RetailerService;
@@ -45,6 +46,9 @@ class WholesalerWeekObserver
 			if ($model->wholesaler->retailer->autoplayer || $retailerMaxWait) {
 				$this->retailerService->nextWeek($model->wholesaler->game->id);
 			}
+
+
+			broadcast(new WholesalerWeekEvent($model->wholesaler->game->id));
 		}
 	}
 }

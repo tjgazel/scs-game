@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Events\ManufacturerInactivePlayer;
-use App\Events\ManufacturerWeekEvent;
 use App\Models\Manufacturer;
 use App\Models\ManufacturerYourOrder;
 use App\Models\SessionDB;
@@ -90,7 +89,6 @@ class ManufacturerController extends Controller
 	public function nextWeek($gameId)
 	{
 		$manufacturerWeek = $this->service->nextWeek($gameId);
-		broadcast(new ManufacturerWeekEvent($gameId));
 
 		return $manufacturerWeek;
 	}

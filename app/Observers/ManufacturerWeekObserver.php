@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Events\ManufacturerWeekEvent;
 use App\Models\ManufacturerWeek;
 use App\Models\SessionDB;
 use App\Services\DistributorService;
@@ -45,6 +46,8 @@ class ManufacturerWeekObserver
 			if ($model->manufacturer->distributor->autoplayer || $distributorMaxWait){
 				$this->distributorService->nextWeek($model->manufacturer->game->id);
 			}
+
+			broadcast(new ManufacturerWeekEvent($model->manufacturer->game->id));
 		}
 	}
 }

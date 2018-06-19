@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Events\DistributorInactivePlayer;
-use App\Events\DistributorWeekEvent;
 use App\Models\Distributor;
 use App\Models\DistributorYourOrder;
 use App\Models\SessionDB;
@@ -96,7 +95,6 @@ class DistributorController extends Controller
 	public function nextWeek($gameId)
 	{
 		$distributorWeek = $this->service->nextWeek($gameId);
-		broadcast(new DistributorWeekEvent($gameId));
 
 		return $distributorWeek;
 	}

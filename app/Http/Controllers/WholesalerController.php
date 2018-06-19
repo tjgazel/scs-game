@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Events\WholesalerInactivePlayer;
-use App\Events\WholesalerWeekEvent;
 use App\Models\SessionDB;
 use App\Models\Wholesaler;
 use App\Models\WholesalerYourOrder;
@@ -96,7 +95,6 @@ class WholesalerController extends Controller
 	public function nextWeek($gameId)
 	{
 		$wholesalerWeek = $this->service->nextWeek($gameId);
-		broadcast(new WholesalerWeekEvent($gameId));
 
 		return $wholesalerWeek;
 	}
