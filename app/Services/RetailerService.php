@@ -7,9 +7,8 @@ use App\Models\RetailerWeek;
 
 class RetailerService
 {
-	public function nextWeek($gameId)
+	public function nextWeek(Retailer $model)
 	{
-		$model = Retailer::where('game_id', $gameId)->first();
 		$wholesalerWeekCount = $model->wholesaler->wholesalerWeeks()->count();
 		$newOrder = orderCalculate($model->game->max_weeks, $wholesalerWeekCount);
 

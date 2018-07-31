@@ -95,7 +95,7 @@
                 <div class="input-group-append">
                   <button @click="onSubmit" class="btn btn-dark btn-sm" type="button"
                           :disabled="loading">
-                    <i class="fa fa-angle-double-right"></i> Próxima Semana
+                    <i class="fa fa-angle-double-right"></i> Fazer Pedido
                   </button>
                 </div>
               </div>
@@ -130,28 +130,36 @@
 </template>
 
 <script>
+  import {randomInt, alertSubmit, alertSeason} from '../modules/functions';
+
   export default {
-    props: ['gameId', 'dataUrl', 'submitUrl', 'nextWeekUrl', 'gameOffUrl'],
+    props: ['gameId', 'dataUrl', 'submitUrl', 'nextWeekUrl', 'gameOffUrl', 'gameOutUrl'],
     mounted() {
       this.loadData();
 
-      Echo.channel(`WholesalerWeekEvent.${this.gameId}`)
-        .listen('WholesalerWeekEvent', (e) => {
-          this.incoming = true;
-          if (this.yourOrder) {
-            this.nextWeek();
-          } else {
-            toastr.warning('Seus parceiros de jogo estão esperando! Faça seu pedido!');
-          }
+      /* Mensagem de submit */
+      Echo.channel(`ManufacturerYourOrderEvent.${this.gameId}`)
+        .listen('ManufacturerYourOrderEvent', (e) => {
+          this.orderEvent = true;
+          alertSubmit('Fabricante');
         });
+      Echo.channel(`DistributorYourOrderEvent.${this.gameId}`)
+        .listen('DistributorYourOrderEvent', (e) => {
+          this.orderEvent = true;
+          alertSubmit('Distribuidor');
+        });
+      Echo.channel(`WholesalerYourOrderEvent.${this.gameId}`)
+        .listen('WholesalerYourOrderEvent', (e) => {
+          this.orderEvent = true;
+          alertSubmit('Atacadista');
+        });
+
+      /* Finalizando ciclo */
       Echo.channel(`RetailerWeekEvent.${this.gameId}`)
         .listen('RetailerWeekEvent', (e) => {
           if (e.gameOff) {
             window.location = this.gameOffUrl;
           }
-          this.loading = false;
-          this.yourOrder = false;
-          this.incoming = false;
           window.location.reload();
         });
       Echo.channel(`RetailerInactivePlayer.${this.gameId}`)
@@ -166,36 +174,33 @@
         data: {
           week: 0,
           maxWeeks: 0,
+          maxWait: 0,
           weekLog: {},
           lastBackOrder: 0,
           incomingWeekOne: 0,
           incomingWeekTwo: 0
         },
         loading: false,
-        yourOrder: false,
-        incoming: false
+        orderEvent: false
       }
     },
     methods: {
       loadData() {
-        axios.get(this.dataUrl).then(res => this.data = res.data).catch(error => console.log(error));
+        axios.get(this.dataUrl)
+          .then(res => {
+            this.data = res.data;
+            const wait = (res.data.maxWait * 60000) - 15000;
+            setTimeout(this.timeOut, wait);
+            alertSeason(res.data.maxWeeks, res.data.week);
+          })
+          .catch(error => console.error(error));
       },
       nextWeek() {
-        axios.post(this.nextWeekUrl, {}).catch(error => console.log(error));
+        axios.post(this.nextWeekUrl, {}).catch(error => console.error(error));
       },
       onSubmit() {
         this.loading = true;
-        axios.post(this.submitUrl, {your_order: this.inputYourOrder})
-          .then(res => {
-            this.yourOrder = true;
-            if (this.incoming) {
-              this.nextWeek();
-            }
-          })
-          .catch(error => {
-            this.loading = false;
-            console.log(error);
-          });
+        axios.post(this.submitUrl, {your_order: this.inputYourOrder}).catch(error => console.error(error));
       },
       inputChange: _.debounce(function (e) {
         if (isNaN(e.target.value)) {
@@ -208,7 +213,16 @@
           this.inputError = false;
           this.inputYourOrder = 0;
         }
-      }, 500)
+      }, 500),
+      timeOut() {
+        if (this.orderEvent) {
+          axios.post(this.submitUrl, {your_order: randomInt(35, 60)}).then(res => {
+            window.location = `${window.appUrl}/games/${this.gameId}`;
+          }).catch(error => console.error(error));
+        } else {
+          window.location = `${window.appUrl}/games/${this.gameId}`;
+        }
+      }
     }
   };
 </script>

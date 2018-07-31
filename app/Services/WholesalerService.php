@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\Game;
 use App\Models\Wholesaler;
 use App\Models\WholesalerWeek;
 
 class WholesalerService
 {
-	public function nextWeek($gameId)
+	public function nextWeek(Wholesaler $model)
 	{
-		$model = Wholesaler::where('game_id', $gameId)->first();
 		$distributorWeekCount = $model->distributor->distributorWeeks()->count();
 
 		$incoming = isset($model->distributor->distributorWeeks[$distributorWeekCount - 3]->delivery) ?
@@ -35,5 +35,17 @@ class WholesalerService
 			'your_order' => $model->yourOrders->last()->your_order,
 			'cost' => $cost
 		]);
+	}
+
+	private function validate(Game $game)
+	{
+		$wholesalerCountOrders = $game->wholesaler->yourOrders()->count();
+		$retailerCountOrders = $game->retailer->yourOrders()->count();
+
+		if ($retailerCountOrders == $wholesalerCountOrders) {
+			$this->wholesalerService->nextWeek($game->id);
+		} else {
+			$this->checkOrders($game);
+		}
 	}
 }

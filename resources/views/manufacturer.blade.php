@@ -12,7 +12,8 @@
     submit-url="{{route('manufacturer.your-order', ['gameId' => $manufacturer->game->id])}}"
     next-week-url="{{route('manufacturer.next-week', ['gameId' => $manufacturer->game->id])}}"
     data-url="{{route('manufacturer.stakeholder', ['gameId' => $manufacturer->game->id])}}"
-    game-off-url="{{route('games.show', ['gameId' => $manufacturer->game->id])}}">
+    game-off-url="{{route('games.show', ['gameId' => $manufacturer->game->id])}}"
+    game-out-url="{{route('manufacturer.gameout', ['id' => $manufacturer->id])}}">
   </manufacturer>
   
   <week-logs

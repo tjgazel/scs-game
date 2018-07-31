@@ -64,6 +64,7 @@ class DistributorController extends Controller
 		return [
 			'week' => $modelWeekCount - 1,
 			'maxWeeks' => $model->game->max_weeks,
+			'maxWait' => $model->game->max_wait,
 			'weekLog' => $model->distributorWeeks->last(),
 			'lastBackOrder' => $model->distributorWeeks[$modelWeekCount - 2]->back_order ?? 0,
 			'incomingWeekOne' => $model->manufacturer->manufacturerWeeks->last()->delivery,

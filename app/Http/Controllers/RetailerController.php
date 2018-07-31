@@ -45,7 +45,7 @@ class RetailerController extends Controller
 				$model->autoplayer = false;
 				$model->save();
 				broadcast(new RetailerInactivePlayer($gameId));
-			}else{
+			} else {
 				toastr()->error('Já existe um usuário jogando como Varejista!');
 				return redirect()->back();
 			}
@@ -63,6 +63,7 @@ class RetailerController extends Controller
 		return [
 			'week' => $model->retailerWeeks()->count() - 1,
 			'maxWeeks' => $model->game->max_weeks,
+			'maxWait' => $model->game->max_wait,
 			'weekLog' => $model->retailerWeeks->last(),
 			'lastBackOrder' => $model->retailerWeeks[$modelWeekCount - 2]->back_order ?? 0,
 			'incomingWeekOne' => $model->wholesaler->wholesalerWeeks->last()->delivery,

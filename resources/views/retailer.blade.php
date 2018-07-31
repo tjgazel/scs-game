@@ -12,7 +12,8 @@
     submit-url="{{route('retailer.your-order', ['gameId' => $retailer->game->id])}}"
     next-week-url="{{route('retailer.next-week', ['gameId' => $retailer->game->id])}}"
     data-url="{{route('retailer.stakeholder', ['gameId' => $retailer->game->id])}}"
-    game-off-url="{{route('games.show', ['gameId' => $retailer->game->id])}}">
+    game-off-url="{{route('games.show', ['gameId' => $retailer->game->id])}}"
+    game-out-url="{{route('retailer.gameout', ['id' => $retailer->id])}}">
   </retailer>
   
   <week-logs

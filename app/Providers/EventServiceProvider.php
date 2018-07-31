@@ -13,15 +13,16 @@ class EventServiceProvider extends ServiceProvider
 	 * @var array
 	 */
 	protected $listen = [
-		'App\Events\ManufacturerNewOrderEvent' => [],
+		'App\Events\ManufacturerYourOrderEvent' => [],
 		'App\Events\ManufacturerWeekEvent' => [],
 		'App\Events\ManufacturerInactivePlayer' => [],
-		'App\Events\DistributorNewOrderEvent' => [],
+		'App\Events\DistributorYourOrderEvent' => [],
 		'App\Events\DistributorWeekEvent' => [],
 		'App\Events\DistributorInactivePlayer' => [],
-		'App\Events\WholesalerNewOrderEvent' => [],
+		'App\Events\WholesalerYourOrderEvent' => [],
 		'App\Events\WholesalerWeekEvent' => [],
 		'App\Events\WholesalerInactivePlayer' => [],
+		'App\Events\RetailerYourOrderEvent' => [],
 		'App\Events\RetailerWeekEvent' => [],
 		'App\Events\RetailerInactivePlayer' => [],
 	];

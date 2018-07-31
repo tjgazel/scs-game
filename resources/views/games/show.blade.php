@@ -15,27 +15,27 @@
       faltam algum dos stakeholders.</small>
   </h6>
 </div>
-<div class="row justify-content-center">
+<div class="row justify-content-center mb-5">
   <div class="col-md-6 mt-3 mb-3 text-center">
     <a href="{{ route('retailer.index', ['gameId' => $game->id]) }}"
-       class="btn btn-success btn-block @if(!$game->retailer->autoplayer) disabled @endif">
+       class="btn btn-success btn-block @if($isPlaying['retailer']) disabled @endif">
       <i class="fa fa-store-alt"></i> Varejista
-      @if(!$game->retailer->autoplayer) - <small>( jogando )</small> @endif
+      @if($isPlaying['retailer']) - <small>( jogando )</small> @endif
     </a>
     <a href="{{ route('wholesaler.index', ['gameId' => $game->id]) }}"
-       class="btn btn-secondary btn-block @if(!$game->wholesaler->autoplayer) disabled @endif">
+       class="btn btn-secondary btn-block @if($isPlaying['wholesaler']) disabled @endif">
       <i class="fa fa-building"></i> Atacadista
-      @if(!$game->wholesaler->autoplayer) - <small>( jogando )</small> @endif
+      @if($isPlaying['wholesaler']) - <small>( jogando )</small> @endif
     </a>
     <a href="{{ route('distributor.index', ['gameId' => $game->id]) }}"
-       class="btn btn-info btn-block @if(!$game->distributor->autoplayer) disabled @endif">
+       class="btn btn-info btn-block @if($isPlaying['distributor']) disabled @endif">
       <i class="fa fa-dolly-flatbed"></i> Distribuidor
-      @if(!$game->distributor->autoplayer) - <small>( jogando )</small> @endif
+      @if($isPlaying['distributor']) - <small>( jogando )</small> @endif
     </a>
     <a href="{{ route('manufacturer.index', ['gameId' => $game->id]) }}"
-       class="btn btn-primary btn-block @if(!$game->manufacturer->autoplayer) disabled @endif">
+       class="btn btn-primary btn-block @if($isPlaying['manufacturer']) disabled @endif">
       <i class="fa fa-industry"></i> Fabricante
-      @if(!$game->manufacturer->autoplayer) - <small>( jogando )</small> @endif
+      @if($isPlaying['manufacturer']) - <small>( jogando )</small> @endif
     </a>
   </div>
 </div>

@@ -2,18 +2,29 @@
 
 namespace App\Observers;
 
-
-use App\Events\DistributorInactivePlayer;
 use App\Events\ManufacturerInactivePlayer;
-use App\Events\ManufacturerNewOrderEvent;
+use App\Events\DistributorYourOrderEvent;
+use App\Events\WholesalerInactivePlayer;
 use App\Models\DistributorYourOrder;
 use App\Models\ManufacturerYourOrder;
-use App\Models\SessionDB;
 use App\Models\WholesalerYourOrder;
-use Carbon\Carbon;
+use App\Services\ManufacturerService;
 
 class DistributorYourOrderObserver
 {
+	/**
+	 * @var ManufacturerService
+	 */
+	private $manufacturerService;
+
+	/**
+	 * ManufacturerYourOrderObserver constructor.
+	 * @param ManufacturerService $manufacturerService
+	 */
+	public function __construct(ManufacturerService $manufacturerService)
+	{
+		$this->manufacturerService = $manufacturerService;
+	}
 
 	/**
 	 * Listen to the Retailer created event.
@@ -22,53 +33,40 @@ class DistributorYourOrderObserver
 	 */
 	public function created(DistributorYourOrder $model)
 	{
+		broadcast(new DistributorYourOrderEvent($model->distributor->game->id));
+
 		$distributorCountOrder = $model->distributor->yourOrders()->count();
-		$maxWait = $model->distributor->game->max_wait;
-		$now = Carbon::now();
-		$wholesalerMaxWait = false;
-		$manufacturerMaxWait = false;
 
-		if (isset($model->distributor->wholesaler->user->session_id)) {
-			if ($last_activity = SessionDB::where('id', $model->distributor->wholesaler->user->session_id)
-				->first()->last_activity) {
-				$lastActivity = $now->diffInMinutes(Carbon::createFromTimestamp($last_activity));
-				$wholesalerMaxWait = ($lastActivity > $maxWait) ? true : false;
-			}
-		}
-
-		if ($model->distributor->wholesaler->autoplayer || $wholesalerMaxWait){
+		if (isAutoPlayer($model->distributor->wholesaler)){
 			$wholesalerCountOrder = $model->distributor->wholesaler->yourOrders()->count();
+
 			if ($distributorCountOrder > $wholesalerCountOrder) {
+				broadcast(new WholesalerInactivePlayer($model->distributor->game->id));
+
 				WholesalerYourOrder::create([
 					'wholesaler_id' => $model->distributor->wholesaler->id,
 					'your_order' => orderCalculate($model->distributor->game->max_weeks,
 						$model->distributor->wholesaler->wholesalerWeeks()->count())
 				]);
-				broadcast(new DistributorInactivePlayer($model->distributor->game->id));
 			}
 		}
 
-		if (isset($model->distributor->manufacturer->user->session_id)) {
-			if ($last_activity = SessionDB::where('id', $model->distributor->manufacturer->user->session_id)
-				->first()->last_activity) {
-				$lastActivity = $now->diffInMinutes(Carbon::createFromTimestamp($last_activity));
-				$manufacturerMaxWait = ($lastActivity > $maxWait) ? true : false;
-			}
-		}
-
-		if ($model->distributor->manufacturer->autoplayer || $manufacturerMaxWait) {
+		if (isAutoPlayer($model->distributor->manufacturer)) {
 			$manufacturerCountOrder = $model->distributor->manufacturer->yourOrders()->count();
+
 			if ($distributorCountOrder > $manufacturerCountOrder) {
+				broadcast(new ManufacturerInactivePlayer($model->distributor->game->id));
+
 				ManufacturerYourOrder::create([
 					'manufacturer_id' => $model->distributor->manufacturer->id,
 					'your_order' => orderCalculate($model->distributor->game->max_weeks,
 						$model->distributor->manufacturer->manufacturerWeeks()->count())
 				]);
-				broadcast(new ManufacturerInactivePlayer($model->distributor->game->id));
 			}
-		} else {
-			broadcast(new ManufacturerNewOrderEvent($model->distributor->game->id));
 		}
+
+		sleep(2);
+		$this->manufacturerService->nextWeek($model->distributor->manufacturer);
 
 	}
 }

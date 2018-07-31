@@ -2,11 +2,9 @@
 
 namespace App\Observers;
 
-use App\Events\DistributorWeekEvent;
 use App\Models\DistributorWeek;
-use App\Models\SessionDB;
+use App\Models\Game;
 use App\Services\WholesalerService;
-use Carbon\Carbon;
 
 class DistributorWeekObserver
 {
@@ -31,23 +29,8 @@ class DistributorWeekObserver
 	public function created(DistributorWeek $model)
 	{
 		if ($model->distributor->distributorWeeks()->count() > 1) {
-			$maxWait = $model->distributor->game->max_wait;
-			$now = Carbon::now();
-			$wholesalerMaxWait = false;
-
-			if (isset($model->distributor->wholesaler->user->session_id)) {
-				if ($last_activity = SessionDB::where('id', $model->distributor->wholesaler->user->session_id)
-					->first()->last_activity) {
-					$lastActivity = $now->diffInMinutes(Carbon::createFromTimestamp($last_activity));
-					$wholesalerMaxWait = ($lastActivity > $maxWait) ? true : false;
-				}
-			}
-
-			if ($model->distributor->wholesaler->autoplayer || $wholesalerMaxWait){
-				$this->wholesalerService->nextWeek($model->distributor->game->id);
-			}
-
-			broadcast(new DistributorWeekEvent($model->distributor->game->id));
+//			broadcast(new DistributorWeekEvent($model->distributor->game->id));
+			$this->wholesalerService->nextWeek($model->distributor->wholesaler);
 		}
 	}
 }

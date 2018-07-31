@@ -58,6 +58,7 @@ class ManufacturerController extends Controller
 		return [
 			'week' => $modelWeekCount - 1,
 			'maxWeeks' => $model->game->max_weeks,
+			'maxWait' => $model->game->max_wait,
 			'weekLog' => $model->manufacturerWeeks->last(),
 			'lastBackOrder' => $model->manufacturerWeeks[$modelWeekCount - 2]->back_order ?? 0,
 			'incomingWeekOne' => $model->manufacturerWeeks->last()->your_order,
@@ -88,7 +89,8 @@ class ManufacturerController extends Controller
 
 	public function nextWeek($gameId)
 	{
-		$manufacturerWeek = $this->service->nextWeek($gameId);
+		$model = Manufacturer::where('game_id', $gameId)->first();
+		$manufacturerWeek = $this->service->nextWeek($model);
 
 		return $manufacturerWeek;
 	}

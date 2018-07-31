@@ -64,6 +64,7 @@ class WholesalerController extends Controller
 		return [
 			'week' => $modelWeekCount - 1,
 			'maxWeeks' => $model->game->max_weeks,
+			'maxWait' => $model->game->max_wait,
 			'weekLog' => $model->wholesalerWeeks->last(),
 			'lastBackOrder' => $model->wholesalerWeeks[$modelWeekCount - 2]->back_order ?? 0,
 			'incomingWeekOne' => $model->distributor->distributorWeeks->last()->delivery,
