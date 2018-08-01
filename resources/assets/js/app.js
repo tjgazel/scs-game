@@ -23,7 +23,8 @@ Vue.component('distributor', require('./components/Distributor.vue'));
 Vue.component('wholesaler', require('./components/Wholesaler.vue'));
 Vue.component('retailer', require('./components/Retailer.vue'));
 Vue.component('week-logs', require('./components/WeekLogs.vue'));
-Vue.component('graphics', require('./components/Graphics.vue'));
+Vue.component('line-chart', require('./components/LineChart.vue'));
+Vue.component('bar-chart', require('./components/BarChart.vue'));
 
 const app = new Vue({
     el: '#app'

@@ -31,6 +31,10 @@ class DistributorController extends Controller
 		$model = Distributor::where('game_id', $gameId)->first();
 		$distributor = $model;
 
+		if (!$model->game->status) {
+			return redirect()->route('games.show', ['game' => $gameId]);
+		}
+
 		if ($model->autoplayer) {
 			$model->user_id = auth()->user()->id;
 			$model->autoplayer = false;
@@ -76,7 +80,11 @@ class DistributorController extends Controller
 	{
 		$model = Distributor::where('game_id', $gameId)->first();
 
-		return $model->distributorWeeks;
+		return response()->json([
+			'week_log' => $model->distributorWeeks->toArray(),
+			'cost_stock' => $model->game->cost_stock,
+			'cost_delay' => $model->game->cost_delay
+		]);
 	}
 
 	public function yourOrder(Request $request, $gameId)
@@ -91,13 +99,6 @@ class DistributorController extends Controller
 		]);
 
 		return ['message' => 'Ok'];
-	}
-
-	public function nextWeek($gameId)
-	{
-		$distributorWeek = $this->service->nextWeek($gameId);
-
-		return $distributorWeek;
 	}
 
 	public function gameOut($gameId)

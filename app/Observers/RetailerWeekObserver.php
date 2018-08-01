@@ -14,7 +14,14 @@ class RetailerWeekObserver
 	public function created(RetailerWeek $model)
 	{
 		if ($model->retailer->retailerWeeks()->count() > 1) {
-			broadcast(new RetailerWeekEvent($model->retailer->game->id));
+			$game = $model->retailer->game;
+
+			if($model->retailer->yourOrders()->count() >= $game->max_weeks){
+				$game->status = false;
+				$game->save();
+			}
+
+			broadcast(new RetailerWeekEvent($game->id));
 		}
 	}
 }

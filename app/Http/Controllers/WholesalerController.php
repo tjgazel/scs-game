@@ -31,6 +31,10 @@ class WholesalerController extends Controller
 		$model = Wholesaler::where('game_id', $gameId)->first();
 		$wholesaler = $model;
 
+		if (!$model->game->status) {
+			return redirect()->route('games.show', ['game' => $gameId]);
+		}
+
 		if ($model->autoplayer) {
 			$model->user_id = auth()->user()->id;
 			$model->autoplayer = false;
@@ -76,7 +80,11 @@ class WholesalerController extends Controller
 	{
 		$model = Wholesaler::where('game_id', $gameId)->first();
 
-		return $model->wholesalerWeeks;
+		return response()->json([
+			'week_log' => $model->wholesalerWeeks->toArray(),
+			'cost_stock' => $model->game->cost_stock,
+			'cost_delay' => $model->game->cost_delay
+		]);
 	}
 
 	public function yourOrder(Request $request, $gameId)
@@ -91,13 +99,6 @@ class WholesalerController extends Controller
 		]);
 
 		return ['message' => 'Ok'];
-	}
-
-	public function nextWeek($gameId)
-	{
-		$wholesalerWeek = $this->service->nextWeek($gameId);
-
-		return $wholesalerWeek;
 	}
 
 	public function gameOut($gameId)

@@ -31,6 +31,10 @@ class RetailerController extends Controller
 		$model = Retailer::where('game_id', $gameId)->first();
 		$retailer = $model;
 
+		if (!$model->game->status) {
+			return redirect()->route('games.show', ['game' => $gameId]);
+		}
+
 		if ($model->autoplayer) {
 			$model->user_id = auth()->user()->id;
 			$model->autoplayer = false;
@@ -85,18 +89,15 @@ class RetailerController extends Controller
 		return ['message' => 'Ok'];
 	}
 
-	public function nextWeek($gameId)
-	{
-		$retailerWeek = $this->service->nextWeek($gameId);
-
-		return $retailerWeek;
-	}
-
 	public function weekLog($gameId)
 	{
-		$retailer = Retailer::where('game_id', $gameId)->first();
+		$model = Retailer::where('game_id', $gameId)->first();
 
-		return $retailer->retailerWeeks;
+		return response()->json([
+			'week_log' => $model->retailerWeeks->toArray(),
+			'cost_stock' => $model->game->cost_stock,
+			'cost_delay' => $model->game->cost_delay
+		]);
 	}
 
 	public function gameOut($gameId)

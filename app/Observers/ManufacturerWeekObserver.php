@@ -2,7 +2,6 @@
 
 namespace App\Observers;
 
-use App\Models\Game;
 use App\Models\ManufacturerWeek;
 use App\Services\DistributorService;
 
@@ -29,7 +28,6 @@ class ManufacturerWeekObserver
 	public function created(ManufacturerWeek $model)
 	{
 		if ($model->manufacturer->manufacturerWeeks()->count() > 1) {
-//			broadcast(new ManufacturerWeekEvent($model->manufacturer->game->id));
 			$this->distributorService->nextWeek($model->manufacturer->distributor);
 		}
 	}

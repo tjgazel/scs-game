@@ -36,16 +36,4 @@ class WholesalerService
 			'cost' => $cost
 		]);
 	}
-
-	private function validate(Game $game)
-	{
-		$wholesalerCountOrders = $game->wholesaler->yourOrders()->count();
-		$retailerCountOrders = $game->retailer->yourOrders()->count();
-
-		if ($retailerCountOrders == $wholesalerCountOrders) {
-			$this->wholesalerService->nextWeek($game->id);
-		} else {
-			$this->checkOrders($game);
-		}
-	}
 }

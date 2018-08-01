@@ -27,6 +27,10 @@ class ManufacturerController extends Controller
 		$model = Manufacturer::where('game_id', $gameId)->first();
 		$manufacturer = $model;
 
+		if (!$model->game->status) {
+			return redirect()->route('games.show', ['game' => $gameId]);
+		}
+
 		if ($model->autoplayer) {
 			$model->user_id = auth()->user()->id;
 			$model->autoplayer = false;
@@ -70,7 +74,11 @@ class ManufacturerController extends Controller
 	{
 		$model = Manufacturer::where('game_id', $gameId)->first();
 
-		return $model->manufacturerWeeks;
+		return response()->json([
+			'week_log' => $model->manufacturerWeeks->toArray(),
+			'cost_stock' => $model->game->cost_stock,
+			'cost_delay' => $model->game->cost_delay
+		]);
 	}
 
 	public function yourOrder(Request $request, $gameId)
@@ -85,14 +93,6 @@ class ManufacturerController extends Controller
 		]);
 
 		return ['message' => 'success'];
-	}
-
-	public function nextWeek($gameId)
-	{
-		$model = Manufacturer::where('game_id', $gameId)->first();
-		$manufacturerWeek = $this->service->nextWeek($model);
-
-		return $manufacturerWeek;
 	}
 
 	public function gameOut($gameId)

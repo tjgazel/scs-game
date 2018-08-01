@@ -23,10 +23,10 @@
             <div class="tab-content" id="myTabContent">
               <div class="row tab-pane fade show active" id="graphics" role="tabpanel" aria-labelledby="graphics-tab">
                 <div class="col-12 mb-5">
-                  <graphics :chart-data="chartData"></graphics>
+                  <line-chart :chart-data="chartData"></line-chart>
                 </div>
                 <div class="col-12">
-                  <graphics :chart-data="costData"></graphics>
+                  <line-chart :chart-data="costData"></line-chart>
                 </div>
               </div>
               <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
@@ -59,7 +59,7 @@
                         <i class="fa fa-cubes"></i><br>Estoque<br>atualizado
                       </th>
                       <th scope="col" class="text-center align-middle">
-                        <i class="fa fa-money-bill-alt"></i><br>Custos
+                        <i class="fa fa-money-bill-alt"></i><br>Total<br/>custos
                       </th>
                     </tr>
                     </thead>
@@ -88,10 +88,11 @@
 </template>
 
 <script>
-  import Graphics from './Graphics';
+  import LineChart from './LineChart';
+  import BarChart from './BarChart';
 
   export default {
-    components: {Graphics},
+    components: {LineChart, BarChart},
     props: ['gameId', 'dataUrl'],
     data() {
       return {
@@ -107,14 +108,16 @@
           inventory: 0,
           your_order: 0,
           cost: 0
-        }]
+        }],
+        cost_stock: 0,
+        cost_delay: 0
       }
     },
     computed: {
       label() {
         let _count = 0, _label = [];
         this.data.forEach(e => {
-          _label.push(_count);
+          _label.push('Semana ' + _count);
           _count++;
         });
         return _label;
@@ -129,10 +132,20 @@
         this.data.forEach(e => _yourOrder.push(e.your_order));
         return _yourOrder;
       },
-      cost() {
-        let _cost = [];
-        this.data.forEach(e => _cost.push(e.cost));
-        return _cost;
+      backOrder() {
+        let _backOrder = [];
+        this.data.forEach(e => _backOrder.push(e.back_order));
+        return _backOrder;
+      },
+      costStock() {
+        let _costStock = [];
+        this.data.forEach(e => _costStock.push(this.cost_stock * e.inventory));
+        return _costStock;
+      },
+      costDelay() {
+        let _costDelay = [];
+        this.data.forEach(e => _costDelay.push(this.cost_delay * e.back_order));
+        return _costDelay;
       },
       chartData() {
         return {
@@ -149,6 +162,12 @@
               borderColor: 'rgba(54, 162, 235, 1)',
               backgroundColor: 'rgba(54, 162, 235, 0.1)',
               data: this.yourOrder
+            },
+            {
+              label: 'Pedidos em atraso',
+              borderColor: 'rgba(255,0,0, 1)',
+              backgroundColor: 'rgba(255,0,0, 0.1)',
+              data: this.backOrder
             }
           ]
         }
@@ -158,10 +177,16 @@
           labels: this.label,
           datasets: [
             {
-              label: 'Custos de manutenção',
-              borderColor: 'rgba(255,0,0, 1)',
-              backgroundColor: 'rgba(255,0,0, 0.4)',
-              data: this.cost
+              label: 'Custos de estoque',
+              borderColor: 'rgba(0, 255, 84, 1)',
+              backgroundColor: 'rgba(0, 255, 84, 0.1)',
+              data: this.costStock
+            },
+            {
+              label: 'Custos de pedidos em atraso',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              backgroundColor: 'rgba(54, 162, 235, 0.1)',
+              data: this.costDelay
             }
           ]
         }
@@ -177,7 +202,11 @@
     },
     methods: {
       loadData() {
-        axios.get(this.dataUrl).then(res => this.data = res.data).catch(error => console.log(error));
+        axios.get(this.dataUrl).then(res => {
+          this.data = res.data.week_log;
+          this.cost_stock = res.data.cost_stock;
+          this.cost_delay = res.data.cost_delay;
+        }).catch(error => console.log(error));
       }
     },
     filters: {

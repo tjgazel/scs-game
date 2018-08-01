@@ -28,7 +28,6 @@ class WholesalerWeekObserver
 	public function created(WholesalerWeek $model)
 	{
 		if ($model->wholesaler->wholesalerWeeks()->count() > 1) {
-//			broadcast(new WholesalerWeekEvent($model->wholesaler->game->id));
 			$this->retailerService->nextWeek($model->wholesaler->retailer);
 		}
 	}

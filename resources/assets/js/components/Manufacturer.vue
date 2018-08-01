@@ -28,7 +28,7 @@
             <li class="list-group-item">
               <i class="fas fa-user-clock"></i> Pedidos em atraso
               <span class="badge badge-danger badge-size float-right">{{data.lastBackOrder}}</span><br>
-              <small class="text-muted">Todos os pedidos que você não pode atender nas semanas anteriores.</small>
+              <small class="text-muted">Todos os pedidos que você não entregou nas semanas anteriores.</small>
             </li>
             <li class="list-group-item">
               <i class="fas fa-truck-loading"></i> Para entregar
@@ -42,7 +42,7 @@
       <div class="col-12 order-first col-md-6 order-md-0 mb-3">
         <div class="card">
           <div class="card-header">
-            <i class="fas fa-flag"></i> {{data.week}}/{{data.maxWeeks}} - Situação atual
+            <i class="fas fa-flag"></i> {{data.week}}/{{data.maxWeeks}} - Situação atual da Semana
           </div>
           <div class="card-body pb-2">
             <div class="row">
@@ -131,7 +131,7 @@
   import {randomInt, alertSubmit, alertSeason} from '../modules/functions';
 
   export default {
-    props: ['gameId', 'dataUrl', 'submitUrl', 'nextWeekUrl', 'gameOffUrl', 'gameOutUrl'],
+    props: ['gameId', 'dataUrl', 'submitUrl', 'gameOffUrl', 'gameOutUrl'],
     mounted() {
       this.loadData();
 
@@ -191,9 +191,6 @@
             alertSeason(res.data.maxWeeks, res.data.week);
           })
           .catch(error => console.log(error));
-      },
-      nextWeek() {
-        axios.post(this.nextWeekUrl, {}).catch(error => console.log(error));
       },
       onSubmit() {
         this.loading = true;

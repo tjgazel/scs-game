@@ -6,7 +6,7 @@ export const alertSubmit = (stakeholder) => {
 
 export const alertSeason = (maxWeeks, week) => {
   if (week == (maxWeeks / 2) -1) {
-    window.toastr.warning('Preparem-se para receber mais pedidos neste período de alta temporada',
+    window.toastr.warning('Prepare-se para receber pedidos maiores nas próximas semanas.',
       'Alta temporada!',
       {closeButton: true, timeOut: 0}
     );
