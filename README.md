@@ -16,4 +16,4 @@ Este projeto foi desenvolvido e apresentado ao Curso e Sistemas de Informação 
 
 SCS Game Simulator is open-sourced software licensed under the [MIT license](LICENSE).
 
-More abut MIT license: https://opensource.org/licenses/MIT
+More about MIT license: https://opensource.org/licenses/MIT
