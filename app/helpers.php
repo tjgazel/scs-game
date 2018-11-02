@@ -18,7 +18,7 @@ if (!function_exists('orderCalculate')) {
 			return random_int(5, 40);
 		}
 
-		return random_int(40, 75);
+		return random_int(40, 65);
 	}
 }
 

@@ -128,7 +128,7 @@
 </template>
 
 <script>
-  import {randomInt, alertSubmit, alertSeason} from '../modules/functions';
+  import {randomInt, alertSubmit, alertSeason, alertLastPlayed} from '../modules/functions';
 
   export default {
     props: ['gameId', 'dataUrl', 'submitUrl', 'gameOffUrl', 'gameOutUrl'],
@@ -189,6 +189,7 @@
             const wait = (res.data.maxWait * 60000) - 15000;
             setTimeout(this.timeOut, wait);
             alertSeason(res.data.maxWeeks, res.data.week);
+            alertLastPlayed(res.data.maxWeeks, res.data.week);
           })
           .catch(error => console.log(error));
       },

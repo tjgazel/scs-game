@@ -5,7 +5,7 @@ export const alertSubmit = (stakeholder) => {
 };
 
 export const alertSeason = (maxWeeks, week) => {
-  if (week == (maxWeeks / 2) -1) {
+  if (week == (maxWeeks / 2) -2) {
     window.toastr.warning('Prepare-se para receber pedidos maiores nas próximas semanas.',
       'Alta temporada!',
       {closeButton: true, timeOut: 0}
@@ -15,6 +15,15 @@ export const alertSeason = (maxWeeks, week) => {
   if ((maxWeeks == 52 && week == ((maxWeeks / 2) + 11)) || (maxWeeks == 26 && week == ((maxWeeks / 2) + 7))) {
     window.toastr.warning('Parece que o movimento voltou ao normal.',
       'Fim da Alta temporada!',
+      {closeButton: true, timeOut: 0}
+    );
+  }
+};
+
+export const alertLastPlayed = (maxWeeks, week) => {
+  if (week == (maxWeeks -1)) {
+    window.toastr.warning('Chegamos a jogada final!',
+      null,
       {closeButton: true, timeOut: 0}
     );
   }
