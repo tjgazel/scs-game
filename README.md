@@ -1,6 +1,6 @@
 # SCS Game Simulator
 
-#### Versão adaptada do jogo online [beergame.org](beergame.org) que simula uma Cadeia de Suprimentos.
+#### Versão adaptada do jogo online [beergame.org](http://www.beergame.org/) que simula uma Cadeia de Suprimentos.
 
 Este projeto foi desenvolvido e apresentado ao Curso e Sistemas de Informação da Faculdade Presidente Antônio de Teófilo Otoni, como requisito parcial para obtenção do título de Bacharel em de Sistemas de Informação.
 
